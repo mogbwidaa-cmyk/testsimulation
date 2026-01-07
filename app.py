@@ -21,17 +21,16 @@ st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-gr
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
 
 # --- الواجهة الرئيسية ---
-st.title("☀️ نظام التبريد الميكانيكي بالبوابات العامودية (90°)")
+st.title("☀️ نظام التبريد الميكانيكي بالبوابات القائمة (90°)")
 st.write("محاكاة لنظام تبريد بـ 5 بوابات (3 خلفية و2 جانبية) بطول 5 سم، تفتح جميعاً في اتجاه واحد عند 35°C.")
 
 temp = st.slider("درجة حرارة الخلية (°C)", 20, 60, 25)
 
 # منطق الفيزياء
 threshold = 35
-# الزاوية تبدأ من 90 (عامودية/مغلقة) وتفتح باتجاه الصفر (موازية/مفتوحة)
-# أو تفتح من 0 إلى 90 حسب اتجاه التدفق، سنعتمد الفتح من الوضع القائم 90°
-opening_offset = min(90, max(0, (temp - threshold) * 6))
-current_angle = 90 - opening_offset # تبدأ قائمة ثم تميل لفتح المسار
+# البوابة تبدأ من زاوية 90 (قائمة لسد الفراغ) وتميل للفتح عند التسخين
+tilt = min(90, max(0, (temp - threshold) * 6))
+current_angle = 90 - tilt 
 
 # --- الرسم الهندسي (Simulation Graphics) ---
 fig, ax = plt.subplots(figsize=(14, 7))
@@ -39,30 +38,32 @@ fig, ax = plt.subplots(figsize=(14, 7))
 # 1. رسم الخلية الشمسية (Solar PV Panel)
 panel_length = 12
 ax.add_patch(plt.Rectangle((2, 10), panel_length, 0.6, color='#001f3f', label='Solar PV Panel'))
+ax.text(8, 10.8, "SOLAR PANEL", color='black', fontweight='bold', ha='center')
 
 # 2. رسم مسار القناة (5cm Air Gap)
 ax.plot([2, 14], [8, 8], 'k--', alpha=0.1)
 
-# 3. رسم البوابات الـ 5 (3 خلفية + 2 جانبية) بطول 5 سم (1.5 وحدة رسم)
+# 3. رسم البوابات الـ 5 بطول 5 سم (1.5 وحدة رسم) في اتجاه واحد
 gate_length = 1.5 
-gate_positions = [2, 5, 8, 11, 14] # توزيع موحد على طول اللوح
+# توزيع البوابات بناءً على رسمك اليدوي (Pivots)
+gate_positions = [2, 5, 8, 11, 14] 
 rad = np.radians(current_angle)
 
 for x_p in gate_positions:
-    # حساب إحداثيات البوابات (تبدأ من مستوى 8 سم وتتجه نحو اللوح عند 10 سم)
+    # البوابات تفتح من الأسفل (Y=8) باتجاه اللوح (Y=10)
     x_end = x_p + gate_length * np.cos(rad)
     y_end = 8 + gate_length * np.sin(rad)
     
-    # رسم البوابة (كلها في اتجاه واحد)
+    # رسم البوابة باللون الأحمر
     ax.plot([x_p, x_end], [8, y_end], color='red', linewidth=5)
-    # رسم المفصلة (Pivot) عند قاعدة الفراغ
-    ax.scatter(x_p, 8, color='black', zorder=5)
+    # رسم المفصلة (Pivot) كما في رسمك اليدوي
+    ax.scatter(x_p, 8, color='black', zorder=5, s=80)
 
-# 4. تدفق الهواء عند الفتح (Longitudinal Airflow)
-if opening_offset > 15:
+# 4. محاكاة تيار الهواء (Airflow)
+if tilt > 15:
     ax.arrow(0, 9, 1.5, 0, head_width=0.3, fc='skyblue', ec='skyblue')
     for i in range(4):
-        ax.arrow(3 + i*3, 7, 1, 1, head_width=0.2, fc='skyblue', ec='skyblue', alpha=0.4)
+        ax.arrow(3 + i*3, 7.5, 1.2, 0.8, head_width=0.2, fc='skyblue', ec='skyblue', alpha=0.4)
     ax.text(14.5, 9, "Air Out", color='blue', fontweight='bold')
 
 # إعدادات الرسم
@@ -73,17 +74,16 @@ ax.axis('off')
 st.pyplot(fig)
 
 
-
 # --- لوحة البيانات ---
 st.divider()
 c1, c2, c3 = st.columns(3)
 with c1:
     st.metric("الحرارة", f"{temp} °C")
 with c2:
-    status = "بوابات قائمة (90°)" if temp <= threshold else "بدء الانحناء للفتح"
+    status = "إغلاق تام (90°)" if temp <= threshold else "انفتاح انسيابي"
     st.write(f"**الوضعية:** {status}")
 with c3:
-    st.metric("إزاحة الفتح", f"{opening_offset:.1f}°")
+    st.metric("زاوية الميل", f"{tilt:.1f}°")
 
-st.info(f"هذا التصميم يضمن بقاء البوابات بزاوية 90 درجة لإغلاق الفراغ الـ 5 سم تماماً، وعند التسخين تميل جميعها في اتجاه طولي واحد للسماح بمرور تيار هواء مستمر.")
+st.info("تم ضبط طول البوابات بـ 5 سم لتتطابق تماماً مع مسافة الفراغ خلف اللوح، مما يضمن كفاءة ميكانيكية قصوى.")
 st.write(f"**التطوير الهندسي: المهندس {ENGINEER_NAME}**")
