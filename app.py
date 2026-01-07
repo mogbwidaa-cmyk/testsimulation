@@ -21,14 +21,13 @@ st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-gr
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
 
 # --- واجهة المحاكاة الرئيسية ---
-st.title("☀️ نظام التبريد الميكانيكي (موقع القاعدة السفلي)")
-st.write("محاكاة للبوابات الموجودة عند مستوى القاعدة (5 سم خلف اللوح) وتفتح للخارج لسحب الهواء.")
+st.title("☀️ نظام التبريد الديناميكي الشامل (فتح كافة البوابات)")
+st.write("محاكاة لنظام تبريد تفتح فيه البوابات الجانبية (الصفراء) والقاعدية (الحمراء) معاً عند 35°C لسحب الهواء من كل الاتجاهات.")
 
 temp = st.slider("درجة حرارة الخلية (°C)", 20, 60, 25)
 
 # منطق الفيزياء (العتبة 35 درجة)
 threshold = 35
-# الزاوية تفتح للخارج (لأسفل) لسحب الهواء
 angle = min(90, max(0, (temp - threshold) * 5))
 rad = np.radians(angle)
 
@@ -39,40 +38,52 @@ fig, ax = plt.subplots(figsize=(12, 7))
 panel_length = 12
 ax.add_patch(plt.Rectangle((2, 10), panel_length, 0.6, color='#001f3f', label='Solar PV Panel'))
 
-# 2. رسم البوابات الجانبية الصفراء (Side Gates) - تربط بين اللوح والقاعدة
-ax.plot([2, 2], [8, 10], color='yellow', linewidth=6, label='Side Support Gates')
-ax.plot([14, 14], [8, 10], color='yellow', linewidth=6)
+# 2. رسم البوابات الجانبية الصفراء (Side Gates) - تفتح الآن للخارج
+# المفصلات الجانبية عند نقاط التقاء اللوح (Y=10)
+# بوابة يسار
+side_x_l = 2 - 1.5 * np.sin(rad)
+side_y_l = 10 - 2 * np.cos(rad)
+ax.plot([2, side_x_l], [10, side_y_l], color='yellow', linewidth=6, label='Active Side Gates')
+ax.scatter(2, 10, color='black', zorder=6, s=50)
 
-# 3. رسم البوابات الـ 3 (موقعها عند الخط المتقطع Y=8)
-# طول البوابات الـ 3 يغطي كامل المسافة بين البوابات الصفراء
+# بوابة يمين
+side_x_r = 14 + 1.5 * np.sin(rad)
+side_y_r = 10 - 2 * np.cos(rad)
+ax.plot([14, side_x_r], [10, side_y_r], color='yellow', linewidth=6)
+ax.scatter(14, 10, color='black', zorder=6, s=50)
+
+# 3. رسم البوابات الحمراء الـ 3 (عند مستوى القاعدة Y=8)
 gate_length = 4.0 
 gate_positions = [2, 6, 10]
-
-# رسم الخط المتقطع (القاعدة) كمرجع خلف البوابات
-ax.plot([2, 14], [8, 8], 'k--', alpha=0.3)
+ax.plot([2, 14], [8, 8], 'k--', alpha=0.2) # خط القاعدة المرجعي
 
 for x_p in gate_positions:
-    # الفتح من مستوى القاعدة (Y=8) باتجاه الخارج (Y < 8)
-    # المفصلات (Pivots) عند مستوى الخط المتقطع
+    # الفتح من مستوى القاعدة (Y=8) باتجاه الخارج
     x_end = x_p + gate_length * np.cos(rad)
     y_end = 8 - gate_length * np.sin(rad)
     
-    # رسم البوابة باللون الأحمر (موقعها الأصلي على الخط المتقطع)
+    # رسم البوابة الحمراء
     ax.plot([x_p, x_end], [8, y_end], color='red', linewidth=6, solid_capstyle='round')
-    ax.scatter(x_p, 8, color='black', zorder=5, s=80) # المفصلة عند القاعدة
+    ax.scatter(x_p, 8, color='black', zorder=5, s=80)
 
-# 4. محاكاة سحب الهواء من الأسفل للداخل
+# 4. تدفق الهواء الشامل (من الجوانب والأسفل)
 if angle > 15:
-    for i in range(4):
-        ax.arrow(3 + i*2.7, 4, 0, 3.5, head_width=0.3, fc='skyblue', ec='skyblue', alpha=0.5)
-    ax.text(8, 5, "EXTERNAL AIR INTAKE", color='blue', fontweight='bold', ha='center')
+    # هواء من الأسفل
+    for i in range(3):
+        ax.arrow(4 + i*4, 4, 0, 3, head_width=0.3, fc='skyblue', ec='skyblue', alpha=0.4)
+    # هواء من الجوانب
+    ax.arrow(0, 9, 1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.4)
+    ax.arrow(16, 9, -1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.4)
+    ax.text(8, 5, "MULTI-DIRECTIONAL AIR INTAKE", color='blue', fontweight='bold', ha='center')
 
 # إعدادات الرسم
-ax.set_xlim(0, 16)
+ax.set_xlim(-2, 18)
 ax.set_ylim(3, 12)
 ax.set_aspect('equal')
 ax.axis('off')
 st.pyplot(fig)
+
+
 
 # --- البيانات التحليلية ---
 st.divider()
@@ -80,16 +91,16 @@ c1, c2, c3 = st.columns(3)
 with c1:
     st.metric("الحرارة", f"{temp} °C")
 with c2:
-    st.metric("زاوية الفتح للخارج", f"{angle:.1f}°")
+    st.metric("زاوية الفتح الموحدة", f"{angle:.1f}°")
 with c3:
-    status = "سحب هواء نشط" if temp > threshold else "صندوق مغلق"
+    status = "تبريد شامل (جوانب + قاعدة)" if temp > threshold else "صندوق محكم الإغلاق"
     st.info(f"حالة النظام: {status}")
 
 st.markdown(f"""
-### ⚙️ الوصف الميكانيكي المحدث:
-- **الموقع:** تم نقل مفصلات البوابات الـ 3 لتكون موازية لخط القاعدة (على بعد 5 سم من اللوح).
-- **آلية الفتح:** تفتح البوابات للخارج لتعمل كـ "مغارف هواء" (Air Scoops) تسحب تيار الهواء المحيط وتوجهه لداخل الفراغ خلف الخلية.
-- **التغطية:** البوابات الصفراء الجانبية تغلق الصندوق من الأطراف، بينما البوابات الحمراء تفتح وتغلق القاعدة بالكامل.
+### ⚙️ مميزات النظام الديناميكي المتكامل:
+- **تحرر الجوانب:** تفتح البوابات الصفراء جانبياً لتقليل الضغط الداخلي والسماح بمرور تيار هواء عرضي.
+- **تأثير المغرفة (Scooping Effect):** البوابات الحمراء في القاعدة تسحب الهواء الصاعد للأعلى باتجاه اللوح.
+- **التزامن الميكانيكي:** كافة البوابات تعمل بمشغل حراري واحد يضمن تفتحها المتزامن عند **{threshold}°C**.
 """)
 
-st.write(f"**تم التعديل الهندسي بواسطة المهندس {ENGINEER_NAME} لدعم براءة الاختراع.**")
+st.write(f"**تم التطوير الهندسي والبرمجة بواسطة المهندس {ENGINEER_NAME}.**")
