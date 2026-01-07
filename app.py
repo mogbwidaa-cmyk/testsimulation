@@ -2,60 +2,80 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 
-# --- ثوابت المهندس (من السيرة الذاتية) ---
-NAME = "Mogahed Bashir" [cite: 1]
-LOCATION = "Madinah, Saudi Arabia" [cite: 2]
-PHONE = "+966 50 131 8054" [cite: 3]
-LINKEDIN = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/" [cite: 5]
+# --- الثوابت (بيانات المهندس والمنصة) ---
 PLATFORM_NAME = "محاكاة براءة الاختراع"
+ENGINEER_NAME = "Mogahed Bashir"
+PHONE = "+966501318054"
+LINKEDIN = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
+WHATSAPP = "https://wa.me/966501318054"
 
+# إعدادات الصفحة
 st.set_page_config(page_title=PLATFORM_NAME, layout="wide")
 
-# --- الشريط الجانبي الثابت ---
+# --- القائمة الجانبية (ثوابت التواصل) ---
 st.sidebar.title(f"🚀 {PLATFORM_NAME}")
-st.sidebar.markdown(f"**المبتكر:** {NAME}") [cite: 1]
-st.sidebar.info(f"📍 {LOCATION}") [cite: 2]
+st.sidebar.markdown(f"**المبتكر:** {ENGINEER_NAME}")
 st.sidebar.divider()
-st.sidebar.markdown(f"📞 {PHONE}") [cite: 3]
-st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})") [cite: 5]
-st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)](https://wa.me/966501318054)")
+st.sidebar.markdown(f"📞 **للتواصل:** {PHONE}")
+st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)]({WHATSAPP})")
+st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
 
 # --- واجهة المحاكاة ---
-st.title("☀️ نظام التبريد الذاتي للخلايا الشمسية (فراغ 5 سم)")
-temp = st.slider("درجة حرارة الخلية (°C)", 20, 65, 25)
+st.title("☀️ نظام التبريد الميكانيكي للخلايا الشمسية")
+st.write("تصميم يعتمد على وجود فراغ 5 سم خلف الخلية مع بوابات تفتح آلياً عند 35°C.")
 
-# منطق الفتح عند 35 درجة
+temp = st.slider("درجة حرارة الخلية (°C)", 20, 60, 25)
+
+# منطق الفيزياء
 threshold = 35
-angle = min(90, max(0, (temp - threshold) * 4))
+# زاوية الفتح
+angle = min(90, max(0, (temp - threshold) * 5))
 
-# --- الرسم الميكانيكي ---
-fig, ax = plt.subplots(figsize=(10, 5))
+# --- الرسم الهندسي للمحاكاة ---
+fig, ax = plt.subplots(figsize=(10, 6))
 
-# رسم الخلية الشمسية
-ax.add_patch(plt.Rectangle((1, 10), 10, 0.5, color='#1a237e', label='Solar Panel'))
+# 1. رسم الخلية الشمسية (Solar Panel)
+ax.add_patch(plt.Rectangle((2, 10), 10, 0.6, color='#001f3f', label='Solar PV Panel'))
+ax.text(5.5, 10.8, "SOLAR PANEL", color='black', fontweight='bold', ha='center')
 
-# رسم فراغ الـ 5 سم (Air Gap)
-ax.text(11.5, 8.5, "5 cm Air Gap", color='gray', fontsize=10)
-ax.plot([11.2, 11.2], [10, 7.5], 'k--', alpha=0.3)
+# 2. تحديد الفراغ (5 cm Gap)
+ax.plot([2, 12], [8, 8], 'k--', alpha=0.2) # خط وهمي يمثل نهاية الفراغ
+ax.annotate('', xy=(13, 8), xytext=(13, 10),
+            arrowprops=dict(arrowstyle='<->', color='gray'))
+ax.text(13.2, 9, "5 cm Gap", color='gray', va='center')
 
-# رسم البوابات الميكانيكية (خلف الفراغ)
+# 3. رسم البوابات الميكانيكية (Mechanical Gates) خلف الفراغ
 rad = np.radians(angle)
-# البوابة الأولى
-ax.plot([1, 1 + 3*np.cos(rad)], [7.5, 7.5 - 3*np.sin(rad)], color='red', linewidth=4, label='Mechanical Flaps')
-# البوابة الثانية
-ax.plot([5, 5 + 3*np.cos(rad)], [7.5, 7.5 - 3*np.sin(rad)], color='red', linewidth=4)
+# سنرسم بوابتين لتوضيح النظام
+for x_pos in [4, 9]:
+    # نقطة الارتكاز (Pivot) عند Y=8 (بعد الفراغ بـ 5 سم افتراضاً)
+    gate_x = [x_pos, x_pos + 3 * np.cos(rad)]
+    gate_y = [8, 8 - 3 * np.sin(rad)]
+    ax.plot(gate_x, gate_y, color='red', linewidth=5, label='Mechanical Gate' if x_pos==4 else "")
+    ax.scatter(x_pos, 8, color='black', zorder=5) # المفصلة
 
-# تدفق الهواء (Airflow)
-if temp > threshold:
+# 4. تدفق الهواء (Airflow)
+if angle > 10:
     for i in range(3):
-        ax.arrow(2 + i*3, 2, 0, 4, head_width=0.3, fc='skyblue', ec='skyblue')
-    ax.text(5, 4, "Natural Convection Flow", color='blue', fontweight='bold')
+        ax.arrow(5 + i*2, 2, 0, 4, head_width=0.3, fc='skyblue', ec='skyblue', alpha=0.6)
+    ax.text(1, 4, "Natural Airflow", color='blue', fontweight='bold', rotation=90)
 
-ax.set_xlim(0, 15)
+# إعدادات المشهد
+ax.set_xlim(0, 16)
 ax.set_ylim(0, 12)
+ax.set_aspect('equal')
 ax.axis('off')
+ax.legend(loc='lower left')
 st.pyplot(fig)
 
 
+
+# --- البيانات التحليلية ---
 st.divider()
-st.success(f"تم حساب التمدد الميكانيكي بناءً على معايير الهندسة الميكانيكية - المهندس {NAME}") [cite: 1]
+c1, c2 = st.columns(2)
+with c1:
+    st.info(f"الحالة الحالية: {'نظام تبريد نشط' if temp > threshold else 'نظام مغلق'}")
+with c2:
+    st.success(f"زاوية فتح البوابة: {angle:.1f} درجة")
+
+st.write(f"**تم إعداد هذه المحاكاة بواسطة المهندس {ENGINEER_NAME} لدعم ملف براءة الاختراع.**")
