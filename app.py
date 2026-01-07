@@ -54,10 +54,8 @@ ax.text(15.5, 9.5, "SIDE GATE\n(BIMETALLIC)", color='#d4af37', fontsize=8, fontw
 
 # إضافة أسهم دخول الهواء من الجوانب عند الفتح
 if angle > 10:
-    # سهم الجانب الأيسر
     ax.arrow(-0.5, 9, 1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
     ax.text(-1, 8.5, "Side Air In", color='orange', fontsize=8, fontweight='bold')
-    # سهم الجانب الأيمن
     ax.arrow(16.5, 9, -1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
     ax.text(17, 8.5, "Side Air In", color='orange', fontsize=8, fontweight='bold')
 
@@ -90,7 +88,7 @@ ax.axis('off')
 ax.legend(loc='lower left', fontsize='x-small')
 st.pyplot(fig)
 
-# --- البيانات التحليلية ---
+# --- البيانات التحليلية وملخص المشروع ---
 st.divider()
 c1, c2, c3 = st.columns(3)
 with c1:
@@ -101,11 +99,30 @@ with c3:
     status = "Active Cooling" if temp > threshold else "System Closed"
     st.info(f"Status: {status}")
 
-st.markdown(f"""
-### ⚙️ Technical Specification (Multi-Gate Actuation):
-- **Bimetallic Side Gates (Yellow):** These lateral gates open outward via a **Bimetallic Strip** to vent hot air trapped at the sides and allow **Side Air Intake**.
-- **Bimetallic Main Gates (Red):** Located at the 5cm base line, these gates open via thermal expansion to scoop external air.
-- **Thermal Actuation Logic:** No electricity is required. The **Bimetallic Strip** reacts to the panel's heat, bending at **{threshold}°C** to provide the mechanical force needed to open the entire cooling box.
+st.markdown("""
+### ⚙️ ملخص المشروع (Project Abstract):
+يهدف هذا المشروع إلى تطوير نظام تبريد هوائي ميكانيكي ذاتي التشغيل للألواح الشمسية الكهروضوئية، مصمم خصيصًا للعمل في البيئات الحارة دون الحاجة إلى أي مصدر طاقة كهربائية أو أنظمة تحكم إلكترونية.
+
+يعتمد النظام على مبدأ التمدد الحراري الميكانيكي المباشر باستخدام عنصر حساس للحرارة (مثل شريحة ثنائية المعدن أو عنصر تمدد حراري مغلق)، يتم تثبيته ميكانيكيًا على الجهة الخلفية للوح الشمسي. عند ارتفاع درجة حرارة اللوح نتيجة التعرض للإشعاع الشمسي، يتمدد هذا العنصر الحراري بشكل متناسب مع درجة الحرارة، مما يؤدي إلى توليد حركة ميكانيكية خطية أو دورانية.
+
+تُنقل هذه الحركة الميكانيكية عبر ذراع ربط ومعايرة زنبركية إلى بوابات تهوية متحركة مثبتة ضمن قنوات هواء خلفية مدمجة في هيكل داعم للوح الشمسي. عند فتح هذه البوابات، يسمح النظام بتدفق الهواء الطبيعي (بالحمل الحراري والرياح المحيطة) عبر القنوات الخلفية، مما يزيد من معدل انتقال الحرارة بالحمل ويؤدي إلى خفض درجة حرارة سطح اللوح.
+
+مع انخفاض درجة حرارة اللوح، ينكمش عنصر التمدد الحراري تدريجيًا، وتقوم آلية الزنبرك بإرجاع البوابات إلى وضع الإغلاق، مما يمنع فقدان الحرارة غير الضروري في ظروف التشغيل الباردة أو المعتدلة. وبذلك يحقق النظام تنظيمًا ذاتيًا مستمرًا يعتمد فقط على درجة حرارة اللوح دون الحاجة إلى حساسات أو وحدات تحكم.
+
+**لأغراض المحاكاة العددية، يمكن تمثيل النظام كنظام متعدد الفيزياء (Multiphysics System) يشمل:**
+1. انتقال الحرارة بالتوصيل داخل اللوح الشمسي.
+2. انتقال الحرارة بالحمل الطبيعي داخل قنوات الهواء الخلفية.
+3. سلوك التمدد الحراري للعنصر الميكانيكي.
+4. حركة ميكانيكية مقيدة للبوابات (Kinematic Motion).
+5. تفاعل حراري–ميكانيكي غير خطي.
+
+**تُستخدم نتائج المحاكاة لتقييم:**
+- فرق درجات الحرارة مع وبدون النظام.
+- معدل تدفق الهواء الناتج عن فتح البوابات.
+- تأثير النظام على الكفاءة الكهربائية المتوقعة للوح الشمسي.
+- زمن الاستجابة الحرارية للنظام.
+
+يمتاز هذا النظام ببساطته، وموثوقيته العالية، وانخفاض تكلفته، مما يجعله مناسبًا للتطبيق على نطاق واسع في محطات الطاقة الشمسية والأسطح السكنية والتجارية في المناطق ذات المناخ الحار.
 """)
 
-st.write(f"**Developed by Engineer: {ENGINEER_NAME} for {PLATFORM_NAME}**")
+st.write(f"**Designed & Programmed by Engineer: {ENGINEER_NAME} for {PLATFORM_NAME}**")
