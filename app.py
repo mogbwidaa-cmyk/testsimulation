@@ -2,7 +2,7 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 
-# --- الثوابت (بيانات المهندس والمنصة) ---
+# --- الثوابت المهنية (بيانات المهندس والمنصة) ---
 PLATFORM_NAME = "محاكاة براءة الاختراع"
 ENGINEER_NAME = "Mogahed Bashir"
 PHONE = "+966501318054"
@@ -12,7 +12,7 @@ WHATSAPP = "https://wa.me/966501318054"
 # إعدادات الصفحة
 st.set_page_config(page_title=PLATFORM_NAME, layout="wide")
 
-# --- القائمة الجانبية (ثوابت التواصل) ---
+# --- القائمة الجانبية الثابتة ---
 st.sidebar.title(f"🚀 {PLATFORM_NAME}")
 st.sidebar.markdown(f"**المبتكر:** {ENGINEER_NAME}")
 st.sidebar.divider()
@@ -20,76 +20,81 @@ st.sidebar.markdown(f"📞 **للتواصل:** {PHONE}")
 st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)]({WHATSAPP})")
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
 
-# --- واجهة المحاكاة الرئيسية ---
-st.title("☀️ نظام التبريد الميكانيكي (صندوق مغلق بـ 5 بوابات)")
-st.write("نظام متكامل يضم 3 بوابات خلفية وبوابتين جانبيتين تفتح بزاوية 90 درجة لتشكيل قناة تبريد عند 35°C.")
+# --- الواجهة الرئيسية ---
+st.title("☀️ نظام التبريد الميكانيكي (تبديل محاور البوابات)")
+st.write("محاكاة لنظام الصندوق المغلق بعد عكس اتجاهات البوابات (الطولية عرضياً والعرضية طولياً).")
 
 # منزلق الحرارة
 temp = st.slider("درجة حرارة الخلية الشمسية (°C)", 20, 60, 25)
 
-# منطق الفيزياء (العتبة 35 درجة)
+# منطق الفيزياء
 threshold = 35
-# الزاوية تبدأ من 90 (إغلاق الصندوق) وتميل نحو الصفر لفتح القناة
 opening_offset = min(90, max(0, (temp - threshold) * 5))
-current_angle = 90 - opening_offset 
-rad = np.radians(current_angle)
+rad = np.radians(90 - opening_offset)
 
-# --- الرسم الهندسي (Simulation Graphics) ---
+# --- الرسم الهندسي المحدث ---
 fig, ax = plt.subplots(figsize=(12, 7))
 
-# 1. رسم الخلية الشمسية (طول 10 وحدات)
-ax.add_patch(plt.Rectangle((3, 10), 10, 0.6, color='#001f3f', label='Solar PV Panel'))
-ax.text(8, 10.8, "SOLAR PV PANEL", color='black', fontweight='bold', ha='center')
+# 1. رسم الخلية الشمسية
+panel_width = 10
+ax.add_patch(plt.Rectangle((3, 10), panel_width, 0.6, color='#001f3f', label='Solar PV Panel'))
 
-# 2. رسم البوابات الخلفية الـ 3 (طول كل واحدة يغطي جزء من اللوح)
-gate_positions = [3, 6.3, 9.6] 
-gate_length = 3.4 
+# 2. رسم البوابات الجانبية التي أصبحت "طولية" (تفتح على طول اللوح)
+# تم تعديلها لتأخذ مساراً طولياً خلف اللوح
+long_gate_len = 1.5 
+ax.plot([3, 13], [8, 8], 'k--', alpha=0.1) # خط القاعدة
+
+# 3. رسم البوابات التي أصبحت "عرضية" (3 بوابات تفتح بالعرض)
+# تعكس الحركة بحيث تميل البوابة باتجاه الناظر أو للداخل (عرضياً)
+gate_positions = [4.5, 8, 11.5]
 for x_p in gate_positions:
-    x_end = x_p + gate_length * np.cos(rad)
-    y_end = 8 + gate_length * np.sin(rad)
-    ax.plot([x_p, x_end], [8, y_end], color='red', linewidth=6, solid_capstyle='round')
-    ax.scatter(x_p, 8, color='black', zorder=5, s=80)
+    # البوابات العرضية تظهر هنا كخطوط تتحرك رأسياً لتوضيح الفتح العرضي
+    y_start = 8
+    y_end = 8 + long_gate_len * np.sin(np.radians(90 - opening_offset))
+    x_end = x_p + long_gate_len * np.cos(np.radians(90 - opening_offset))
+    
+    ax.plot([x_p, x_end], [y_start, y_end], color='red', linewidth=6, label='Cross-sectional Gates' if x_p==4.5 else "")
+    ax.scatter(x_p, 8, color='black', zorder=5)
 
-# 3. إضافة البوابات الجانبية (Side Gates) لتشكيل الصندوق
-side_gate_len = 2.0 # تمثل الـ 5 سم ميكانيكياً
-# البوابة الجانبية اليسرى (تغلق الجانب الأيسر للصندوق)
-ax.plot([3, 3 - side_gate_len * np.cos(np.radians(opening_offset))], [8, 8 + side_gate_len * np.sin(np.radians(opening_offset))], color='orange', linewidth=6, label='Side Gates')
-# البوابة الجانبية اليمنى (تغلق الجانب الأيمن للصندوق)
-ax.plot([13, 13 + side_gate_len * np.cos(np.radians(opening_offset))], [8, 8 + side_gate_len * np.sin(np.radians(opening_offset))], color='orange', linewidth=6)
+# 4. البوابات الجانبية (أصبحت الآن تفتح طولياً)
+side_rad = np.radians(opening_offset)
+# بوابة يسار
+ax.plot([3, 3], [8, 8 + 2*np.cos(side_rad)], color='orange', linewidth=6, label='Longitudinal Side Gates')
+# بوابة يمين
+ax.plot([13, 13], [8, 8 + 2*np.cos(side_rad)], color='orange', linewidth=6)
 
-# 4. توضيح الفراغ الـ 5 سم (Air Gap)
-ax.plot([3, 13], [8, 8], 'k--', alpha=0.1)
-ax.text(13.5, 9, "5 cm Gap", color='gray', fontsize=9)
-
-# 5. تدفق الهواء عند الفتح
+# 5. تدفق الهواء
 if opening_offset > 15:
-    ax.arrow(1, 9, 1.5, 0, head_width=0.3, fc='skyblue', ec='skyblue')
-    ax.text(0, 9.5, "Air In", color='blue', fontsize=8)
+    ax.arrow(8, 6, 0, 1.5, head_width=0.3, fc='skyblue', ec='skyblue')
+    ax.text(8.2, 5.5, "Cross-Flow Cooling", color='blue', fontsize=9)
 
-# إعدادات المشهد
+# إعدادات الرسم
 ax.set_xlim(0, 16)
-ax.set_ylim(6, 12)
+ax.set_ylim(4, 12)
 ax.set_aspect('equal')
 ax.axis('off')
+ax.legend(loc='lower left', ncol=2)
 st.pyplot(fig)
 
 
 
-# --- البيانات التحليلية ---
+# --- لوحة البيانات ---
 st.divider()
-col1, col2, col3 = st.columns(3)
-with col1:
+c1, c2, c3 = st.columns(3)
+with c1:
     st.metric("الحرارة", f"{temp} °C")
-with col2:
-    st.metric("زاوية الميل", f"{opening_offset:.1f}°")
-with col3:
-    status = "صندوق مفتوح (تبريد)" if temp > threshold else "صندوق مغلق تماماً"
-    st.info(f"حالة النظام: {status}")
+with c2:
+    st.metric("زاوية الفتح", f"{opening_offset:.1f}°")
+with c3:
+    status = "تبريد عرضي نشط" if temp > threshold else "صندوق مغلق"
+    st.info(f"الحالة: {status}")
 
 st.markdown(f"""
-### ⚙️ الإضافات الميكانيكية الجديدة:
-- **نظام الصندوق المغلق:** تم إضافة بوابتين جانبيتين (باللون البرتقالي) تقفل جوانب الفراغ الـ 5 سم تماماً في حالة السكون.
-- **التمدد الموحد:** عند التسخين، تتحرك البوابات الـ 5 (3 خلفية و 2 جانبية) في تناسق طولي لفتح مجرى الهواء.
+### 🔄 التعديل الهندسي الجديد:
+تم عكس محاور الحركة الميكانيكية بناءً على المتطلبات الفنية:
+- **البوابات العرضية:** أصبحت تعمل كموزعات للهواء على عرض اللوح.
+- **البوابات الطولية:** تعمل الآن كقنوات جانبية لحصر وتوجيه الهواء طولياً داخل الصندوق.
+- **الفراغ:** تم الحفاظ على مسافة الـ 5 سم كمنطقة ضغط منخفض لتحفيز تدفق الهواء.
 """)
 
-st.write(f"**تم التعديل بواسطة المهندس {ENGINEER_NAME} لمنصة {PLATFORM_NAME}.**")
+st.write(f"**تم التطوير بواسطة المهندس {ENGINEER_NAME} لصالح {PLATFORM_NAME}.**")
