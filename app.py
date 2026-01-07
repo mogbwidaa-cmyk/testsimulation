@@ -29,10 +29,8 @@ st.write("Dynamic simulation showing auto-actuation via Thermal Bimetallic Strip
 auto_mode = st.checkbox("تفعيل المحاكاة التلقائية (ارتفاع وانخفاض الحرارة)")
 
 if auto_mode:
-    # منطق تغيير الحرارة تلقائياً بناءً على الوقت الحالي
-    # تستخدم دالة الجيب (sine wave) لمحاكاة دورة حرارية بين 25 و 45 درجة
     t = time.time()
-    temp = 35 + 10 * np.sin(2 * np.pi * t / 20)  # دورة كاملة كل 20 ثانية (10 صعود و 10 هبوط)
+    temp = 35 + 10 * np.sin(2 * np.pi * t / 20) 
     st.info(f"المحاكاة نشطة: درجة الحرارة تتغير تلقائياً...")
 else:
     temp = st.slider("Solar Cell Temperature (°C)", 20, 60, 25)
@@ -61,15 +59,10 @@ side_y_r = 10 - 2 * np.cos(rad)
 ax.plot([14, side_x_r], [10, side_y_r], color='yellow', linewidth=6)
 ax.text(15.5, 9.5, "SIDE GATE\n(BIMETALLIC)", color='#d4af37', fontsize=8, fontweight='bold', ha='left')
 
-# أسهم الجوانب عند الفتح
-if angle > 10:
-    ax.arrow(-0.5, 9, 1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
-    ax.arrow(16.5, 9, -1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
-
 # 3. Main Rear Gates (Red)
 gate_length = 4.0 
 gate_positions = [2, 6, 10]
-ax.plot([2, 14], [8, 8], 'k--', alpha=0.2)
+ax.plot([2, 14], [8, 8], 'k--', alpha=0.2) # Base Line
 
 for x_p in gate_positions:
     x_end = x_p + gate_length * np.cos(rad)
@@ -77,10 +70,26 @@ for x_p in gate_positions:
     ax.plot([x_p, x_end], [8, y_end], color='red', linewidth=6)
     ax.scatter(x_p, 8, color='black', zorder=5)
 
-# 4. Airflow Visualization (Bottom)
-if angle > 15:
+# --- تعريفات حالات البوابات بناءً على الحرارة ---
+if temp < threshold:
+    # حالة الإغلاق (أقل من 35)
+    ax.text(8, 9, "GATES CLOSED: PREVENTING HEAT LOSS (TEMP < 35°C)", 
+            color='gray', ha='center', fontweight='bold', bbox=dict(facecolor='white', alpha=0.5))
+else:
+    # حالة التبريد (أعلى من 35)
+    ax.text(8, 9, "GATES OPEN: COOLING AIRFLOW INTAKE (TEMP > 35°C)", 
+            color='green', ha='center', fontweight='bold', bbox=dict(facecolor='white', alpha=0.7))
+    
+    # أسهم دخول الهواء الجانبي
+    ax.arrow(-0.5, 9, 1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
+    ax.arrow(16.5, 9, -1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
+    ax.text(-1, 8.5, "Side Air In", color='orange', fontsize=8, fontweight='bold')
+    ax.text(17, 8.5, "Side Air In", color='orange', fontsize=8, fontweight='bold')
+    
+    # أسهم دخول الهواء السفلي
     for i in range(3):
         ax.arrow(4 + i*4, 4, 0, 3, head_width=0.3, fc='skyblue', ec='skyblue', alpha=0.4)
+    ax.text(8, 5, "EXTERNAL COOL AIR INFLOW", color='blue', fontweight='bold', ha='center')
 
 # إعدادات الرسم
 ax.set_xlim(-3, 19)
@@ -89,7 +98,6 @@ ax.set_aspect('equal')
 ax.axis('off')
 st.pyplot(fig)
 
-# تحديث الصفحة تلقائياً عند تفعيل الوضع التلقائي
 if auto_mode:
     time.sleep(1)
     st.rerun()
@@ -107,7 +115,7 @@ with c3:
 
 st.markdown("""
 ### ⚙️ ملخص المشروع (Project Abstract):
-يهدف هذا المشروع إلى تطوير نظام تبريد هوائي ميكانيكي ذاتي التشغيل للألواح الشمسية الكهروضوئية... (النص الكامل كما في الكود السابق)
+يهدف هذا المشروع إلى تطوير نظام تبريد هوائي ميكانيكي ذاتي التشغيل للألواح الشمسية الكهروضوئية... (النص الكامل المعتمد مسبقاً)
 """)
 
-st.write(f"**Developed by Engineer: {ENGINEER_NAME} for {PLATFORM_NAME}**")
+st.write(f"**Designed & Programmed by Engineer: {ENGINEER_NAME} for {PLATFORM_NAME}**")
