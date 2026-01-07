@@ -20,13 +20,13 @@ st.sidebar.markdown(f"📞 **للتواصل:** {PHONE}")
 st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)]({WHATSAPP})")
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
 
-# --- واجهة المحاكاة الرئيسية ---
-st.title("☀️ نظام التبريد الديناميكي الشامل (فتح كافة البوابات)")
-st.write("محاكاة لنظام تبريد تفتح فيه البوابات الجانبية (الصفراء) والقاعدية (الحمراء) معاً عند 35°C لسحب الهواء من كل الاتجاهات.")
+# --- الواجهة الرئيسية ---
+st.title("☀️ Autonomous Thermal Cooling System Simulation")
+st.write("محاكاة نظام التبريد الذاتي: فتح البوابات عبر التمدد الميكانيكي للشريحة الحرارية عند 35°C.")
 
-temp = st.slider("درجة حرارة الخلية (°C)", 20, 60, 25)
+temp = st.slider("Solar Cell Temperature (°C)", 20, 60, 25)
 
-# منطق الفيزياء (العتبة 35 درجة)
+# منطق الفيزياء: الشريحة الحرارية (Thermal Bimetallic Actuator)
 threshold = 35
 angle = min(90, max(0, (temp - threshold) * 5))
 rad = np.radians(angle)
@@ -34,73 +34,67 @@ rad = np.radians(angle)
 # --- الرسم الهندسي ---
 fig, ax = plt.subplots(figsize=(12, 7))
 
-# 1. رسم الخلية الشمسية (المستوى العلوي Y=10)
+# 1. رسم الخلية الشمسية (Solar PV Panel)
 panel_length = 12
 ax.add_patch(plt.Rectangle((2, 10), panel_length, 0.6, color='#001f3f', label='Solar PV Panel'))
+ax.text(8, 10.8, "SOLAR PV PANEL", color='black', fontweight='bold', ha='center')
 
-# 2. رسم البوابات الجانبية الصفراء (Side Gates) - تفتح الآن للخارج
-# المفصلات الجانبية عند نقاط التقاء اللوح (Y=10)
-# بوابة يسار
+# 2. البوابات الجانبية الصفراء (Active Side Gates)
+# تفتح للخارج عبر الشريحة الحرارية
 side_x_l = 2 - 1.5 * np.sin(rad)
 side_y_l = 10 - 2 * np.cos(rad)
-ax.plot([2, side_x_l], [10, side_y_l], color='yellow', linewidth=6, label='Active Side Gates')
-ax.scatter(2, 10, color='black', zorder=6, s=50)
+ax.plot([2, side_x_l], [10, side_y_l], color='yellow', linewidth=6, label='Side Gates (Yellow)')
+ax.text(1, 11, "Side Gate", color='#d4af37', fontsize=9, fontweight='bold')
 
-# بوابة يمين
 side_x_r = 14 + 1.5 * np.sin(rad)
 side_y_r = 10 - 2 * np.cos(rad)
 ax.plot([14, side_x_r], [10, side_y_r], color='yellow', linewidth=6)
-ax.scatter(14, 10, color='black', zorder=6, s=50)
 
-# 3. رسم البوابات الحمراء الـ 3 (عند مستوى القاعدة Y=8)
+# 3. البوابات الحمراء الـ 3 (Main Ventilation Gates)
 gate_length = 4.0 
 gate_positions = [2, 6, 10]
-ax.plot([2, 14], [8, 8], 'k--', alpha=0.2) # خط القاعدة المرجعي
+ax.plot([2, 14], [8, 8], 'k--', alpha=0.2) # Base Line
 
 for x_p in gate_positions:
-    # الفتح من مستوى القاعدة (Y=8) باتجاه الخارج
     x_end = x_p + gate_length * np.cos(rad)
     y_end = 8 - gate_length * np.sin(rad)
-    
-    # رسم البوابة الحمراء
     ax.plot([x_p, x_end], [8, y_end], color='red', linewidth=6, solid_capstyle='round')
-    ax.scatter(x_p, 8, color='black', zorder=5, s=80)
+    ax.scatter(x_p, 8, color='black', zorder=5)
 
-# 4. تدفق الهواء الشامل (من الجوانب والأسفل)
+# توضيح الشريحة الحرارية (Bimetallic Strip)
+if angle > 0:
+    ax.text(8, 7, "ACTUATED BY BIMETALLIC STRIP", color='red', ha='center', fontweight='bold', fontsize=10)
+
+# 4. تدفق الهواء (Airflow Labels)
 if angle > 15:
-    # هواء من الأسفل
     for i in range(3):
         ax.arrow(4 + i*4, 4, 0, 3, head_width=0.3, fc='skyblue', ec='skyblue', alpha=0.4)
-    # هواء من الجوانب
-    ax.arrow(0, 9, 1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.4)
-    ax.arrow(16, 9, -1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.4)
-    ax.text(8, 5, "MULTI-DIRECTIONAL AIR INTAKE", color='blue', fontweight='bold', ha='center')
+    ax.text(8, 5, "COOL EXTERNAL AIR INTAKE", color='blue', fontweight='bold', ha='center')
 
 # إعدادات الرسم
 ax.set_xlim(-2, 18)
 ax.set_ylim(3, 12)
 ax.set_aspect('equal')
 ax.axis('off')
+ax.legend(loc='lower left', fontsize='small')
 st.pyplot(fig)
-
-
 
 # --- البيانات التحليلية ---
 st.divider()
 c1, c2, c3 = st.columns(3)
 with c1:
-    st.metric("الحرارة", f"{temp} °C")
+    st.metric("Temperature", f"{temp} °C")
 with c2:
-    st.metric("زاوية الفتح الموحدة", f"{angle:.1f}°")
+    st.metric("Opening Angle", f"{angle:.1f}°")
 with c3:
-    status = "تبريد شامل (جوانب + قاعدة)" if temp > threshold else "صندوق محكم الإغلاق"
-    st.info(f"حالة النظام: {status}")
+    status = "Active Cooling" if temp > threshold else "System Closed"
+    st.info(f"Status: {status}")
 
 st.markdown(f"""
-### ⚙️ مميزات النظام الديناميكي المتكامل:
-- **تحرر الجوانب:** تفتح البوابات الصفراء جانبياً لتقليل الضغط الداخلي والسماح بمرور تيار هواء عرضي.
-- **تأثير المغرفة (Scooping Effect):** البوابات الحمراء في القاعدة تسحب الهواء الصاعد للأعلى باتجاه اللوح.
-- **التزامن الميكانيكي:** كافة البوابات تعمل بمشغل حراري واحد يضمن تفتحها المتزامن عند **{threshold}°C**.
+### ⚙️ Technical Mechanism (Bimetallic Actuation):
+- **Thermal Actuator:** The gates are operated by a **Bimetallic Strip** (شريحة حرارية).
+- **Function:** When the temperature reaches **{threshold}°C**, the thermal expansion difference between the two metals causes the strip to bend, mechanically pushing the gates open without any electrical power.
+- **Cooling Path:** Once opened, the system allows for multi-directional airflow (Bottom and Sides) to reduce the panel's temperature and increase efficiency.
 """)
 
-st.write(f"**تم التطوير الهندسي والبرمجة بواسطة المهندس {ENGINEER_NAME}.**")
+st.write(f"**Designed & Programmed by Engineer: {ENGINEER_NAME}**")
