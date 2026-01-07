@@ -20,62 +20,79 @@ st.sidebar.markdown(f"📞 **للتواصل:** {PHONE}")
 st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)]({WHATSAPP})")
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
 
-# --- واجهة المحاكاة ---
-st.title("☀️ نظام التبريد الميكانيكي للخلايا الشمسية")
-st.write("تصميم يعتمد على وجود فراغ 5 سم خلف الخلية مع بوابات تفتح آلياً عند 35°C.")
+# --- واجهة المحاكاة الرئيسية ---
+st.title("☀️ نظام التبريد الميكانيكي بـ 3 بوابات متصلة")
+st.write("محاكاة لنظام تبريد خلفي بمسافة 5 سم، حيث تفتح 3 بوابات تغطي كامل طول اللوح عند 35°C.")
 
-temp = st.slider("درجة حرارة الخلية (°C)", 20, 60, 25)
+# منزلق الحرارة
+temp = st.slider("درجة حرارة الخلية الشمسية (°C)", 20, 60, 25)
 
-# منطق الفيزياء
+# منطق الفيزياء (العتبة 35 درجة)
 threshold = 35
-# زاوية الفتح
 angle = min(90, max(0, (temp - threshold) * 5))
 
-# --- الرسم الهندسي للمحاكاة ---
-fig, ax = plt.subplots(figsize=(10, 6))
+# --- الرسم الهندسي (Simulation Graphics) ---
+fig, ax = plt.subplots(figsize=(12, 6))
 
-# 1. رسم الخلية الشمسية (Solar Panel)
-ax.add_patch(plt.Rectangle((2, 10), 10, 0.6, color='#001f3f', label='Solar PV Panel'))
-ax.text(5.5, 10.8, "SOLAR PANEL", color='black', fontweight='bold', ha='center')
+# 1. رسم الخلية الشمسية (طول اللوح 12 وحدة افتراضية)
+ax.add_patch(plt.Rectangle((2, 10), 12, 0.6, color='#001f3f', label='Solar PV Panel'))
+ax.text(8, 10.8, "SOLAR PV PANEL (TOP VIEW)", color='black', fontweight='bold', ha='center')
 
-# 2. تحديد الفراغ (5 cm Gap)
-ax.plot([2, 12], [8, 8], 'k--', alpha=0.2) # خط وهمي يمثل نهاية الفراغ
-ax.annotate('', xy=(13, 8), xytext=(13, 10),
+# 2. توضيح فراغ الـ 5 سم خلف الخلية
+ax.annotate('', xy=(14.5, 8), xytext=(14.5, 10),
             arrowprops=dict(arrowstyle='<->', color='gray'))
-ax.text(13.2, 9, "5 cm Gap", color='gray', va='center')
+ax.text(14.7, 9, "5 cm Air Gap", color='gray', va='center', fontsize=10)
 
-# 3. رسم البوابات الميكانيكية (Mechanical Gates) خلف الفراغ
+# 3. رسم 3 بوابات ميكانيكية (Mechanical Gates)
+# طول اللوح الكلي 12، لذا كل بوابة طولها 4 وحدات لتغطي كامل الطول
+gate_positions = [2, 6, 10] # نقاط الارتكاز (Pivots)
+gate_length = 4
 rad = np.radians(angle)
-# سنرسم بوابتين لتوضيح النظام
-for x_pos in [4, 9]:
-    # نقطة الارتكاز (Pivot) عند Y=8 (بعد الفراغ بـ 5 سم افتراضاً)
-    gate_x = [x_pos, x_pos + 3 * np.cos(rad)]
-    gate_y = [8, 8 - 3 * np.sin(rad)]
-    ax.plot(gate_x, gate_y, color='red', linewidth=5, label='Mechanical Gate' if x_pos==4 else "")
-    ax.scatter(x_pos, 8, color='black', zorder=5) # المفصلة
 
-# 4. تدفق الهواء (Airflow)
+for x_p in gate_positions:
+    # حساب إحداثيات البوابة المتحركة
+    x_end = x_p + gate_length * np.cos(rad)
+    y_end = 8 - gate_length * np.sin(rad)
+    
+    # رسم البوابة
+    ax.plot([x_p, x_end], [8, y_end], color='red', linewidth=6, solid_capstyle='round')
+    # رسم المفصلة (Pivot)
+    ax.scatter(x_p, 8, color='black', zorder=5, s=100)
+
+# تسمية البوابات
+ax.text(8, 6.5, "3RD GENERATION MECHANICAL VENTILATION GATES", color='red', ha='center', fontweight='bold', fontsize=9)
+
+# 4. تدفق الهواء عند الفتح
 if angle > 10:
-    for i in range(3):
-        ax.arrow(5 + i*2, 2, 0, 4, head_width=0.3, fc='skyblue', ec='skyblue', alpha=0.6)
-    ax.text(1, 4, "Natural Airflow", color='blue', fontweight='bold', rotation=90)
+    for i in range(5):
+        ax.arrow(3 + i*2.2, 1, 0, 4, head_width=0.3, fc='skyblue', ec='skyblue', alpha=0.5)
+    ax.text(1, 3, "COOLING AIRFLOW", color='blue', fontweight='bold', rotation=90)
 
-# إعدادات المشهد
+# إعدادات المشهد الرسومي
 ax.set_xlim(0, 16)
 ax.set_ylim(0, 12)
 ax.set_aspect('equal')
 ax.axis('off')
-ax.legend(loc='lower left')
 st.pyplot(fig)
 
 
 
 # --- البيانات التحليلية ---
 st.divider()
-c1, c2 = st.columns(2)
-with c1:
-    st.info(f"الحالة الحالية: {'نظام تبريد نشط' if temp > threshold else 'نظام مغلق'}")
-with c2:
-    st.success(f"زاوية فتح البوابة: {angle:.1f} درجة")
+col1, col2, col3 = st.columns(3)
+with col1:
+    st.metric("درجة الحرارة الحالية", f"{temp} °C")
+with col2:
+    st.metric("زاوية الفتح الميكانيكي", f"{angle:.1f}°")
+with col3:
+    status = "تبريد فعال" if temp > threshold else "وضع الاستعداد"
+    st.info(f"حالة النظام: {status}")
 
-st.write(f"**تم إعداد هذه المحاكاة بواسطة المهندس {ENGINEER_NAME} لدعم ملف براءة الاختراع.**")
+st.markdown(f"""
+### ⚙️ المواصفات الفنية للابتكار:
+- **المشغل:** لوح ألمنيوم حساس للحرارة (Thermal Actuator).
+- **التصميم:** 3 بوابات متتابعة تغطي كامل مساحة سطح التبادل الحراري خلف الخلية.
+- **آلية العمل:** تفتح البوابات بمجرد تمدد المعدن عند **{threshold}°C** للسماح بتدفق هواء طبيعي (Natural Convection).
+""")
+
+st.write(f"**تم إعداد هذا النموذج بواسطة المهندس {ENGINEER_NAME} لدعم ملف براءة الاختراع.**")
