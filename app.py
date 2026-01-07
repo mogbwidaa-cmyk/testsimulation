@@ -2,71 +2,74 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 
-# --- الثوابت (بيانات المنصة والمهندس مجاهد بشير) ---
-NAME = "Mogahed Bashir"
-PLATFORM_NAME = "ثوابت"
+# --- الثوابت الأساسية ---
+PLATFORM_NAME = "محاكاة براءة الاختراع"
+ENGINEER_NAME = "Mogahed Bashir"
 PHONE = "+966501318054"
 LINKEDIN = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
+THRESHOLD_TEMP = 35
 
 # إعدادات الصفحة
-st.set_page_config(page_title=f"محاكاة رسومية - {PLATFORM_NAME}", layout="wide")
+st.set_page_config(page_title=PLATFORM_NAME, page_icon="💡", layout="wide")
 
-# --- التنسيق الجانبي ---
-st.sidebar.title(f"منصة {PLATFORM_NAME}")
-st.sidebar.markdown(f"**المهندس:** {NAME}")
+# --- الشريط الجانبي (ثوابت التواصل) ---
+st.sidebar.title(PLATFORM_NAME)
+st.sidebar.markdown(f"**إشراف المهندس:**\n{ENGINEER_NAME}")
+st.sidebar.divider()
+st.sidebar.markdown(f"📞 **رقم التواصل:** {PHONE}")
+st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)](https://wa.me/{PHONE.replace(' ', '')})")
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
-st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)](https://wa.me/{PHONE})")
 
-# --- المحتوى الأساسي ---
-st.title("📊 محاكاة هندسية مرئية لحركة البوابة الحرارية")
-temp = st.slider("تحكم في درجة الحرارة (°C)", 20, 60, 25)
+# --- واجهة المحاكاة الرئيسية ---
+st.title(f"🚀 {PLATFORM_NAME}")
+st.subheader("نظام البوابة ذاتية الحركة بالتمدد الحراري")
 
-target_temp = 35
+# تحكم المستخدم في الحرارة
+temp = st.select_slider("درجة الحرارة المحيطة (°C)", options=list(range(20, 61)), value=25)
 
-# حساب زاوية الفتح (من 0 إلى 90 درجة)
-if temp >= target_temp:
-    angle = min(90, (temp - target_temp) * 4.5)
+# منطق فتح البوابة
+if temp >= THRESHOLD_TEMP:
+    # حساب زاوية الفتح (تزداد بزيادة الحرارة بحد أقصى 90 درجة)
+    angle = min(90, (temp - THRESHOLD_TEMP) * 5)
+    status_text = f"البوابة مفتوحة بزاوية {angle:.1f}°"
+    status_color = "green"
 else:
     angle = 0
+    status_text = "البوابة مغلقة (درجة الحرارة منخفضة)"
+    status_color = "red"
 
-# --- الرسم الهندسي (Simulation Drawing) ---
-fig, ax = plt.subplots(figsize=(6, 6))
+# --- رسم السيموليشن (Visual Simulation) ---
+fig, ax = plt.subplots(figsize=(8, 6))
 
-# رسم الإطار الثابت (الجدار)
-ax.plot([0, 0], [0, 10], color='black', linewidth=5, label='Fixed Frame')
+# رسم الإطار الثابت (Fixed Frame)
+ax.plot([0, 0], [0, 10], color='black', linewidth=8, label='إطار ثابت')
 
-# حساب إحداثيات البوابة بناءً على زاوية الفتح
-# نستخدم التحويل من قطبي إلى ديكارتي: x = L*sin(theta), y = L*cos(theta)
+# حساب حركة البوابة (تتحرك المفصلة عند النقطة 0,5)
 theta_rad = np.radians(angle)
-x_gate = [0, 8 * np.sin(theta_rad)]
-y_gate = [5, 5 + 8 * np.cos(theta_rad)]
+# إحداثيات نهاية البوابة بناءً على الزاوية
+x_end = 8 * np.sin(theta_rad)
+y_end = 5 + 8 * np.cos(theta_rad)
 
-# رسم البوابة (Gate)
-ax.plot(x_gate, y_gate, color='red', linewidth=4, label='Thermal Gate')
+# رسم البوابة المتحركة
+ax.plot([0, x_end], [5, y_end], color='red', linewidth=6, label='البوابة المتحركة')
 
-# رسم الشريحة ثنائية المعدن (Bimetallic Strip) تمثيلياً
-ax.annotate('Bimetallic Strip', xy=(0, 5), xytext=(3, 2),
-            arrowprops=dict(facecolor='blue', shrink=0.05))
+# إضافة مؤشر للشريحة ثنائية المعدن
+if angle > 0:
+    ax.annotate('تمدد حراري!', xy=(x_end/2, (5+y_end)/2), xytext=(5, 8),
+                arrowprops=dict(facecolor='orange', shrink=0.05), fontsize=12, color='orange')
 
-# إعدادات الرسم
+# تنسيق الرسم البياني
 ax.set_xlim(-2, 12)
 ax.set_ylim(-2, 15)
 ax.set_aspect('equal')
 ax.axis('off')
-ax.set_title(f"Gate Angle: {angle:.1f}° | Temp: {temp}°C")
+ax.set_title(f"حالة النظام عند {temp}°C", fontsize=15)
 
-# عرض الرسم في Streamlit
+# عرض الرسم
 st.pyplot(fig)
 
+# --- تفاصيل الحالة ---
+st.markdown(f"### الحالة الحالية: :{status_color}[{status_text}]")
 
-
-# --- بيانات الحالة ---
-col1, col2 = st.columns(2)
-with col1:
-    st.metric("درجة الحرارة", f"{temp} °C")
-with col2:
-    status = "مفتوحة" if angle > 0 else "مغلقة"
-    st.metric("حالة البوابة", status)
-
-st.write("---")
-st.info(f"هذه المحاكاة تعكس تمدد المعادن الفيزيائي. تم التصميم بواسطة المهندس {NAME} لتعزيز أنظمة التحكم الذاتي.")
+st.divider()
+st.info(f"هذا المشروع مسجل ضمن منصة **{PLATFORM_NAME}** كنموذج أولي لابتكار ميكانيكي يعتمد على الفيزياء التطبيقية في الصيانة التنبؤية.")
