@@ -1,51 +1,72 @@
 import streamlit as st
+import matplotlib.pyplot as plt
+import numpy as np
 
-# --- الثوابت (بيانات المنصة والمهندس) ---
-# ملاحظة: تم تنظيف الكود من أي علامات مرجعية لتجنب NameError
+# --- الثوابت (بيانات المنصة والمهندس مجاهد بشير) ---
 NAME = "Mogahed Bashir"
-TITLE = "Mechanical Engineer"
-LOCATION = "Madinah, Saudi Arabia"
-PHONE = "+966501318054"
-EMAIL = "mog.b.widaa@gmail.com"
-LINKEDIN = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
 PLATFORM_NAME = "ثوابت"
+PHONE = "+966501318054"
+LINKEDIN = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
 
 # إعدادات الصفحة
-st.set_page_config(page_title=f"{PLATFORM_NAME} - {NAME}", page_icon="⚙️")
+st.set_page_config(page_title=f"محاكاة رسومية - {PLATFORM_NAME}", layout="wide")
 
-# --- التنسيق الجانبي (Sidebar) ---
+# --- التنسيق الجانبي ---
 st.sidebar.title(f"منصة {PLATFORM_NAME}")
 st.sidebar.markdown(f"**المهندس:** {NAME}")
-st.sidebar.markdown("---")
-st.sidebar.write(f"📞 {PHONE}")
-st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)](https://wa.me/{PHONE})")
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
+st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)](https://wa.me/{PHONE})")
 
 # --- المحتوى الأساسي ---
-st.title("🌡️ محاكاة بوابة التمدد الحراري")
-st.write("نظام ميكانيكي يعتمد على الشريحة ثنائية المعدن لفتح التهوية تلقائياً عند 35°C.")
-
-# شريط التحكم بالحرارة
-temp = st.slider("عدل درجة الحرارة (°C)", 20, 50, 25)
+st.title("📊 محاكاة هندسية مرئية لحركة البوابة الحرارية")
+temp = st.slider("تحكم في درجة الحرارة (°C)", 20, 60, 25)
 
 target_temp = 35
 
-# منطق عمل البوابة
-st.subheader("حالة النظام الميكانيكي")
+# حساب زاوية الفتح (من 0 إلى 90 درجة)
 if temp >= target_temp:
-    angle = min(90, (temp - target_temp) * 6)
-    st.success(f"البوابة: مفتوحة ✅")
-    st.info(f"زاوية الفتح الناتجة عن التمدد: {angle} درجة")
-    
+    angle = min(90, (temp - target_temp) * 4.5)
 else:
-    st.error("البوابة: مغلقة 🛑")
-    st.info("الحرارة أقل من 35°C، القوة الميكانيكية غير كافية للفتح.")
+    angle = 0
 
-# توضيح هندسي
-st.divider()
-st.markdown("### 💡 التحليل الهندسي (Mechanical Insight)")
-st.write(f"""
-عند وصول درجة الحرارة إلى {target_temp}°C، تتولد قوة دفع ميكانيكية نتيجة تمدد الشريحة 
-ثنائية المعدن (Bimetallic Strip). هذا التصميم يحاكي أنظمة الصيانة التنبؤية التي 
-يعمل عليها المهندس {NAME} لضمان استمرارية العمل دون تدخل بشري.
-""")
+# --- الرسم الهندسي (Simulation Drawing) ---
+fig, ax = plt.subplots(figsize=(6, 6))
+
+# رسم الإطار الثابت (الجدار)
+ax.plot([0, 0], [0, 10], color='black', linewidth=5, label='Fixed Frame')
+
+# حساب إحداثيات البوابة بناءً على زاوية الفتح
+# نستخدم التحويل من قطبي إلى ديكارتي: x = L*sin(theta), y = L*cos(theta)
+theta_rad = np.radians(angle)
+x_gate = [0, 8 * np.sin(theta_rad)]
+y_gate = [5, 5 + 8 * np.cos(theta_rad)]
+
+# رسم البوابة (Gate)
+ax.plot(x_gate, y_gate, color='red', linewidth=4, label='Thermal Gate')
+
+# رسم الشريحة ثنائية المعدن (Bimetallic Strip) تمثيلياً
+ax.annotate('Bimetallic Strip', xy=(0, 5), xytext=(3, 2),
+            arrowprops=dict(facecolor='blue', shrink=0.05))
+
+# إعدادات الرسم
+ax.set_xlim(-2, 12)
+ax.set_ylim(-2, 15)
+ax.set_aspect('equal')
+ax.axis('off')
+ax.set_title(f"Gate Angle: {angle:.1f}° | Temp: {temp}°C")
+
+# عرض الرسم في Streamlit
+st.pyplot(fig)
+
+
+
+# --- بيانات الحالة ---
+col1, col2 = st.columns(2)
+with col1:
+    st.metric("درجة الحرارة", f"{temp} °C")
+with col2:
+    status = "مفتوحة" if angle > 0 else "مغلقة"
+    st.metric("حالة البوابة", status)
+
+st.write("---")
+st.info(f"هذه المحاكاة تعكس تمدد المعادن الفيزيائي. تم التصميم بواسطة المهندس {NAME} لتعزيز أنظمة التحكم الذاتي.")
