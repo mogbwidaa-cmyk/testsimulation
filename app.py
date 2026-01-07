@@ -2,74 +2,83 @@ import streamlit as st
 import matplotlib.pyplot as plt
 import numpy as np
 
-# --- الثوابت الأساسية ---
+# --- الثوابت (بيانات المهندس مجاهد بشير ومنصة محاكاة براءة الاختراع) ---
 PLATFORM_NAME = "محاكاة براءة الاختراع"
 ENGINEER_NAME = "Mogahed Bashir"
 PHONE = "+966501318054"
 LINKEDIN = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
-THRESHOLD_TEMP = 35
+WHATSAPP = f"https://wa.me/{PHONE.replace(' ', '').replace('+', '')}"
 
 # إعدادات الصفحة
-st.set_page_config(page_title=PLATFORM_NAME, page_icon="💡", layout="wide")
+st.set_page_config(page_title=PLATFORM_NAME, layout="wide")
 
-# --- الشريط الجانبي (ثوابت التواصل) ---
-st.sidebar.title(PLATFORM_NAME)
-st.sidebar.markdown(f"**إشراف المهندس:**\n{ENGINEER_NAME}")
+# --- التنسيق الجانبي (ثوابت التواصل) ---
+st.sidebar.title(f"🚀 {PLATFORM_NAME}")
+st.sidebar.markdown(f"**المبتكر:** {ENGINEER_NAME}")
 st.sidebar.divider()
-st.sidebar.markdown(f"📞 **رقم التواصل:** {PHONE}")
-st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)](https://wa.me/{PHONE.replace(' ', '')})")
+st.sidebar.markdown(f"📞 **للتواصل:** {PHONE}")
+st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)]({WHATSAPP})")
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
 
-# --- واجهة المحاكاة الرئيسية ---
-st.title(f"🚀 {PLATFORM_NAME}")
-st.subheader("نظام البوابة ذاتية الحركة بالتمدد الحراري")
+# --- واجهة المحاكاة ---
+st.title(f"⚙️ محاكاة براءة الاختراع: نظام التهوية الحراري الذاتي")
+st.write("محاكاة ميكانيكية توضح استجابة البوابة لتمدد الشريحة ثنائية المعدن (Bimetallic Strip).")
 
-# تحكم المستخدم في الحرارة
-temp = st.select_slider("درجة الحرارة المحيطة (°C)", options=list(range(20, 61)), value=25)
+# منزلق درجة الحرارة
+temp = st.slider("درجة الحرارة المحيطة (°C)", 20, 60, 25)
 
-# منطق فتح البوابة
-if temp >= THRESHOLD_TEMP:
-    # حساب زاوية الفتح (تزداد بزيادة الحرارة بحد أقصى 90 درجة)
-    angle = min(90, (temp - THRESHOLD_TEMP) * 5)
-    status_text = f"البوابة مفتوحة بزاوية {angle:.1f}°"
-    status_color = "green"
+# منطق الفيزياء (Logic)
+threshold = 35
+if temp > threshold:
+    # زاوية الفتح تزداد تدريجياً (محاكاة لسوليد وورك)
+    angle = min(90, (temp - threshold) * 4) 
+    status = "OPENING / تمدد حراري"
+    color = "green"
 else:
     angle = 0
-    status_text = "البوابة مغلقة (درجة الحرارة منخفضة)"
-    status_color = "red"
+    status = "CLOSED / انكماش"
+    color = "red"
 
-# --- رسم السيموليشن (Visual Simulation) ---
-fig, ax = plt.subplots(figsize=(8, 6))
+# --- الرسم الهندسي (Simulation Graphics) ---
+fig, ax = plt.subplots(figsize=(7, 7))
 
-# رسم الإطار الثابت (Fixed Frame)
-ax.plot([0, 0], [0, 10], color='black', linewidth=8, label='إطار ثابت')
+# 1. رسم الإطار الثابت (Fixed Structure)
+ax.plot([-1, -1], [0, 10], 'k-', linewidth=10) # الجدار الأيسر
+ax.plot([10, 10], [0, 10], 'k-', linewidth=10) # الجدار الأيمن
+ax.plot([-1, 10], [10, 10], 'k-', linewidth=5)  # السقف
 
-# حساب حركة البوابة (تتحرك المفصلة عند النقطة 0,5)
-theta_rad = np.radians(angle)
-# إحداثيات نهاية البوابة بناءً على الزاوية
-x_end = 8 * np.sin(theta_rad)
-y_end = 5 + 8 * np.cos(theta_rad)
+# 2. حساب حركة البوابة (تفتح من المنتصف أو كبوابة علوية)
+rad = np.radians(angle)
+x_gate = [0, 8 * np.cos(rad)]
+y_gate = [10, 10 - 8 * np.sin(rad)]
 
-# رسم البوابة المتحركة
-ax.plot([0, x_end], [5, y_end], color='red', linewidth=6, label='البوابة المتحركة')
+# 3. رسم البوابة (The Flap)
+ax.plot(x_gate, y_gate, color=color, linewidth=6, label='Ventilation Gate')
 
-# إضافة مؤشر للشريحة ثنائية المعدن
-if angle > 0:
-    ax.annotate('تمدد حراري!', xy=(x_end/2, (5+y_end)/2), xytext=(5, 8),
-                arrowprops=dict(facecolor='orange', shrink=0.05), fontsize=12, color='orange')
+# 4. رسم سهم تدفق الهواء (Airflow) عند الفتح
+if angle > 10:
+    ax.arrow(4, -2, 0, 5, head_width=0.5, head_length=1, fc='blue', ec='blue', label='Airflow')
+    ax.text(4.5, 0, "دخول الهواء", color='blue', fontsize=12)
 
-# تنسيق الرسم البياني
-ax.set_xlim(-2, 12)
-ax.set_ylim(-2, 15)
+# تنسيق المشهد الرسومي
+ax.set_xlim(-5, 15)
+ax.set_ylim(-5, 15)
 ax.set_aspect('equal')
 ax.axis('off')
-ax.set_title(f"حالة النظام عند {temp}°C", fontsize=15)
+ax.set_title(f"الحرارة: {temp}°C | الزاوية: {angle:.1f}°", fontsize=14, fontweight='bold')
 
-# عرض الرسم
+# عرض الرسم في Streamlit
 st.pyplot(fig)
 
-# --- تفاصيل الحالة ---
-st.markdown(f"### الحالة الحالية: :{status_color}[{status_text}]")
 
+
+# --- لوحة البيانات ---
 st.divider()
-st.info(f"هذا المشروع مسجل ضمن منصة **{PLATFORM_NAME}** كنموذج أولي لابتكار ميكانيكي يعتمد على الفيزياء التطبيقية في الصيانة التنبؤية.")
+c1, c2 = st.columns(2)
+with c1:
+    st.markdown(f"### الحالة الحالية: :{color}[{status}]")
+with c2:
+    st.markdown("### المبدأ الفيزيائي")
+    st.write("تحويل الطاقة الحرارية إلى شغل ميكانيكي عبر اختلاف معامل التمدد الطولي للمركبات المعدنية.")
+
+st.info(f"تم تطوير هذه المحاكاة لتعزيز ملف براءة الاختراع الخاص بالمهندس {ENGINEER_NAME} في تطبيقات الصيانة التنبؤية.")
