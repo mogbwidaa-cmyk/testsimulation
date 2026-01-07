@@ -52,6 +52,15 @@ side_y_r = 10 - 2 * np.cos(rad)
 ax.plot([14, side_x_r], [10, side_y_r], color='yellow', linewidth=6)
 ax.text(15.5, 9.5, "SIDE GATE\n(BIMETALLIC)", color='#d4af37', fontsize=8, fontweight='bold', ha='left')
 
+# إضافة أسهم دخول الهواء من الجوانب عند الفتح
+if angle > 10:
+    # سهم الجانب الأيسر
+    ax.arrow(-0.5, 9, 1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
+    ax.text(-1, 8.5, "Side Air In", color='orange', fontsize=8, fontweight='bold')
+    # سهم الجانب الأيمن
+    ax.arrow(16.5, 9, -1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
+    ax.text(17, 8.5, "Side Air In", color='orange', fontsize=8, fontweight='bold')
+
 # 3. Main Rear Gates (Actuated by Bimetallic Strip)
 gate_length = 4.0 
 gate_positions = [2, 6, 10]
@@ -67,7 +76,7 @@ for x_p in gate_positions:
 if angle > 0:
     ax.text(8, 7, "ACTUATED BY BIMETALLIC STRIPS", color='red', ha='center', fontweight='bold', fontsize=10)
 
-# 4. Airflow Visualization
+# 4. Airflow Visualization (Bottom)
 if angle > 15:
     for i in range(3):
         ax.arrow(4 + i*4, 4, 0, 3, head_width=0.3, fc='skyblue', ec='skyblue', alpha=0.4)
@@ -80,8 +89,6 @@ ax.set_aspect('equal')
 ax.axis('off')
 ax.legend(loc='lower left', fontsize='x-small')
 st.pyplot(fig)
-
-
 
 # --- البيانات التحليلية ---
 st.divider()
@@ -96,7 +103,7 @@ with c3:
 
 st.markdown(f"""
 ### ⚙️ Technical Specification (Multi-Gate Actuation):
-- **Bimetallic Side Gates (Yellow):** These lateral gates open outward via a **Bimetallic Strip** to vent hot air trapped at the sides.
+- **Bimetallic Side Gates (Yellow):** These lateral gates open outward via a **Bimetallic Strip** to vent hot air trapped at the sides and allow **Side Air Intake**.
 - **Bimetallic Main Gates (Red):** Located at the 5cm base line, these gates open via thermal expansion to scoop external air.
 - **Thermal Actuation Logic:** No electricity is required. The **Bimetallic Strip** reacts to the panel's heat, bending at **{threshold}°C** to provide the mechanical force needed to open the entire cooling box.
 """)
