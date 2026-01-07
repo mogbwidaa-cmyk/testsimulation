@@ -1,4 +1,3 @@
-# مكتبات المعالجة والرسوم البيانية المتوافقة مع الويب
-numpy
-matplotlib
+streamlit
 pandas
+matplotlib
