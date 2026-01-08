@@ -10,8 +10,24 @@ PHONE = "+966501318054"
 LINKEDIN = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
 WHATSAPP = "https://wa.me/966501318054"
 
-# إعدادات الصفحة
+# إعدادات الصفحة ودعم اتجاه اليمين إلى اليسار (RTL)
 st.set_page_config(page_title=PLATFORM_NAME, layout="wide")
+
+# كود CSS لفرض اتجاه اليمين إلى اليسار ومحاذاة النص
+st.markdown("""
+    <style>
+    .main {
+        direction: rtl;
+        text-align: right;
+    }
+    div.stMarkdown {
+        text-align: right;
+    }
+    div[data-testid="stMetric"] {
+        text-align: right;
+    }
+    </style>
+    """, unsafe_allow_right_with_label=True)
 
 # --- القائمة الجانبية الثابتة ---
 st.sidebar.title(f"🚀 {PLATFORM_NAME}")
@@ -23,7 +39,7 @@ st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile
 
 # --- واجهة المحاكاة الرئيسية ---
 st.title("☀️ Autonomous Thermal Cooling System Simulation")
-st.write("Dynamic simulation showing auto-actuation via Thermal Bimetallic Strips.")
+st.write("محاكاة ديناميكية لنظام التبريد ذاتي التشغيل عبر الشرائح الحرارية.")
 
 # خيار التفعيل التلقائي
 auto_mode = st.checkbox("تفعيل المحاكاة التلقائية (ارتفاع وانخفاض الحرارة)")
@@ -33,7 +49,7 @@ if auto_mode:
     temp = 35 + 10 * np.sin(2 * np.pi * t / 20) 
     st.info(f"المحاكاة نشطة: درجة الحرارة تتغير تلقائياً...")
 else:
-    temp = st.slider("Solar Cell Temperature (°C)", 20, 60, 25)
+    temp = st.slider("درجة حرارة الخلية الشمسية (°C)", 20, 60, 25)
 
 # منطق الفيزياء: الشريحة الحرارية
 threshold = 35
@@ -79,11 +95,8 @@ else:
             color='green', ha='center', fontweight='bold', bbox=dict(facecolor='white', alpha=0.7))
     ax.arrow(-0.5, 9, 1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
     ax.arrow(16.5, 9, -1.5, 0, head_width=0.3, fc='orange', ec='orange', alpha=0.7)
-    ax.text(-1, 8.5, "Side Air In", color='orange', fontsize=8, fontweight='bold')
-    ax.text(17, 8.5, "Side Air In", color='orange', fontsize=8, fontweight='bold')
     for i in range(3):
         ax.arrow(4 + i*4, 4, 0, 3, head_width=0.3, fc='skyblue', ec='skyblue', alpha=0.4)
-    ax.text(8, 5, "EXTERNAL COOL AIR INFLOW", color='blue', fontweight='bold', ha='center')
 
 ax.set_xlim(-3, 19)
 ax.set_ylim(3, 12)
@@ -95,18 +108,20 @@ if auto_mode:
     time.sleep(1)
     st.rerun()
 
-# --- البيانات التحليلية والخلاصة الجذابة ---
+# --- البيانات التحليلية والخلاصة (محاذاة يمين) ---
 st.divider()
 c1, c2, c3 = st.columns(3)
-with c1:
-    st.metric("Temperature", f"{temp:.1f} °C")
+with c3: # وضعها في العمود الثالث لتكون أقصى اليمين في تخطيط Streamlit
+    st.metric("درجة الحرارة", f"{temp:.1f} °C")
 with c2:
-    st.metric("Opening Angle", f"{angle:.1f}°")
-with c3:
-    status = "Active Cooling" if temp > threshold else "System Closed"
-    st.info(f"Status: {status}")
+    st.metric("زاوية الفتح", f"{angle:.1f}°")
+with c1:
+    status = "تبريد نشط" if temp > threshold else "النظام مغلق"
+    st.info(f"الحالة: {status}")
 
 st.markdown("""
+<div style="direction: rtl; text-align: right;">
+
 ### 💡 الخلاصة الابتكارية (Innovative Abstract):
 
 **نحو جيل جديد من الطاقة المستدامة بذكاء ميكانيكي بحت!**
@@ -119,6 +134,8 @@ st.markdown("""
 * **اعتمادية لا تضاهى:** بساطة التصميم تجعله مقاوماً للأعطال، منخفض التكلفة، ومثالياً للاستخدام في أقصى الظروف المناخية حرارةً.
 
 **باختصار: نحن لا نبرد الألواح فحسب، بل نجعل الشمس هي المحرك لتبريد نفسها!**
-""")
 
-st.write(f"**Designed & Programmed by Engineer: {ENGINEER_NAME} for {PLATFORM_NAME}**")
+</div>
+""", unsafe_allow_html=True)
+
+st.write(f"**تم التطوير والبرمجة بواسطة المهندس: {ENGINEER_NAME} لصالح {PLATFORM_NAME}**")
