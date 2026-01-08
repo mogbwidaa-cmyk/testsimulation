@@ -13,7 +13,7 @@ WHATSAPP = "https://wa.me/966501318054"
 # إعدادات الصفحة
 st.set_page_config(page_title=PLATFORM_NAME, layout="wide")
 
-# كود CSS لفرض اتجاه اليمين إلى اليسار (RTL) وتصحيح المحاذاة
+# كود CSS لضبط الاتجاه والمحاذاة والمسافات
 st.markdown("""
     <style>
     .main {
@@ -23,13 +23,28 @@ st.markdown("""
     div.stMarkdown {
         text-align: right;
     }
+    /* تقليل المسافة بين العنوان والوصف */
+    h1 {
+        margin-bottom: 0px;
+        padding-bottom: 0px;
+    }
+    .description-text {
+        margin-top: -20px;
+        font-size: 1.2rem;
+        color: #555;
+    }
     div[data-testid="stMetricValue"] {
         text-align: right;
     }
     </style>
     """, unsafe_allow_html=True)
 
-# --- القائمة الجانبية الثابتة ---
+# --- واجهة المحاكاة الرئيسية ---
+st.title("☀️ Autonomous Thermal Cooling System Simulation")
+# النص أسفل العنوان مباشرة وبدون نقطة في النهاية
+st.markdown('<p class="description-text">محاكاة ديناميكية لنظام التبريد ذاتي التشغيل عبر الشرائح الحرارية</p>', unsafe_allow_html=True)
+
+# القائمة الجانبية الثابتة
 st.sidebar.title(f"🚀 {PLATFORM_NAME}")
 st.sidebar.markdown(f"**المبتكر:** {ENGINEER_NAME}")
 st.sidebar.divider()
@@ -37,17 +52,12 @@ st.sidebar.markdown(f"📞 **للتواصل:** {PHONE}")
 st.sidebar.markdown(f"[![WhatsApp](https://img.shields.io/badge/WhatsApp-Chat-green?style=for-the-badge&logo=whatsapp)]({WHATSAPP})")
 st.sidebar.markdown(f"[![LinkedIn](https://img.shields.io/badge/LinkedIn-Profile-blue?style=for-the-badge&logo=linkedin)]({LINKEDIN})")
 
-# --- واجهة المحاكاة الرئيسية ---
-st.title("☀️ Autonomous Thermal Cooling System Simulation")
-st.write("محاكاة ديناميكية لنظام التبريد ذاتي التشغيل عبر الشرائح الحرارية.")
-
 # خيار التفعيل التلقائي
 auto_mode = st.checkbox("تفعيل المحاكاة التلقائية (ارتفاع وانخفاض الحرارة)")
 
 if auto_mode:
     t = time.time()
     temp = 35 + 10 * np.sin(2 * np.pi * t / 20) 
-    st.info(f"المحاكاة نشطة: درجة الحرارة تتغير تلقائياً...")
 else:
     temp = st.slider("درجة حرارة الخلية الشمسية (°C)", 20, 60, 25)
 
