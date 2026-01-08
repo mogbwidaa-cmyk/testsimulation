@@ -10,10 +10,10 @@ PHONE = "+966501318054"
 LINKEDIN = "https://www.linkedin.com/in/mogahed-bashir-52a5072ba/"
 WHATSAPP = "https://wa.me/966501318054"
 
-# إعدادات الصفحة ودعم اتجاه اليمين إلى اليسار (RTL)
+# إعدادات الصفحة
 st.set_page_config(page_title=PLATFORM_NAME, layout="wide")
 
-# كود CSS لفرض اتجاه اليمين إلى اليسار ومحاذاة النص
+# كود CSS لفرض اتجاه اليمين إلى اليسار (RTL) وتصحيح المحاذاة
 st.markdown("""
     <style>
     .main {
@@ -23,11 +23,11 @@ st.markdown("""
     div.stMarkdown {
         text-align: right;
     }
-    div[data-testid="stMetric"] {
+    div[data-testid="stMetricValue"] {
         text-align: right;
     }
     </style>
-    """, unsafe_allow_right_with_label=True)
+    """, unsafe_allow_html=True)
 
 # --- القائمة الجانبية الثابتة ---
 st.sidebar.title(f"🚀 {PLATFORM_NAME}")
@@ -86,7 +86,7 @@ for x_p in gate_positions:
     ax.plot([x_p, x_end], [8, y_end], color='red', linewidth=6)
     ax.scatter(x_p, 8, color='black', zorder=5)
 
-# --- تعريفات حالات البوابات بناءً على الحرارة ---
+# تعريفات الحالات
 if temp < threshold:
     ax.text(8, 9, "GATES CLOSED: PREVENTING HEAT LOSS (TEMP < 35°C)", 
             color='gray', ha='center', fontweight='bold', bbox=dict(facecolor='white', alpha=0.5))
@@ -108,10 +108,10 @@ if auto_mode:
     time.sleep(1)
     st.rerun()
 
-# --- البيانات التحليلية والخلاصة (محاذاة يمين) ---
+# --- البيانات التحليلية والخلاصة ---
 st.divider()
 c1, c2, c3 = st.columns(3)
-with c3: # وضعها في العمود الثالث لتكون أقصى اليمين في تخطيط Streamlit
+with c3:
     st.metric("درجة الحرارة", f"{temp:.1f} °C")
 with c2:
     st.metric("زاوية الفتح", f"{angle:.1f}°")
